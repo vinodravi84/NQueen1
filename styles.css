@@ -26,6 +26,20 @@ button {
     margin-top: 20px;
 }
 
+#solutions-container {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 20px;
+    gap: 20px;
+    justify-content: center;
+}
+
+.solution-board {
+    display: grid;
+    gap: 2px;
+    margin: 10px;
+}
+
 .cell {
     width: 100px;
     height: 100px;
@@ -34,6 +48,11 @@ button {
     align-items: center;
     font-size: 2em;
     border: 1px solid black;
+}
+
+.solution-board .cell {
+    width: 50px;
+    height: 50px;
 }
 
 .white {
