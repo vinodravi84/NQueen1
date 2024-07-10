@@ -1,13 +1,22 @@
 let N;
 let board;
 let cellColors;
+let solutionsDiv;
+let speedSlider;
+let speed = 500;
+let solving = false;
 
 function initialize() {
+    if (solving) return; // Prevent re-initialization while solving
     N = parseInt(document.getElementById('sizeInput').value);
+    speedSlider = document.getElementById('speedSlider');
+    speed = 2000 - parseInt(speedSlider.value); // Invert the speed interpretation
     board = Array(N).fill(-1);
     cellColors = Array.from({ length: N }, () => Array(N).fill(null));
+    solutionsDiv = document.getElementById('solutions');
+    solutionsDiv.innerHTML = ''; // Clear previous solutions
     createBoard();
-    placeQueens();
+    solveQueens();
 }
 
 function createBoard() {
@@ -46,22 +55,25 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function placeQueens() {
-    await placeQueensOnRow(0);
+async function solveQueens() {
+    solving = true;
+    await solveQueensOnRow(0);
+    solving = false;
 }
 
-async function placeQueensOnRow(row) {
+async function solveQueensOnRow(row) {
     if (row === N) {
-        return true;
+        await showSolution();
+        return false;
     }
 
     for (let col = 0; col < N; col++) {
         board[row] = col;
         updateBoard();
-        await sleep(500);
+        await sleep(speed);
 
         if (isSafe(row, col)) {
-            if (await placeQueensOnRow(row + 1)) {
+            if (await solveQueensOnRow(row + 1)) {
                 return true;
             }
         } else {
@@ -75,7 +87,7 @@ async function placeQueensOnRow(row) {
             }
             cellColors[row][col] = 'red';
             updateBoard();
-            await sleep(1500);
+            await sleep(speed * 3);
             for (let i = 0; i < N; i++) {
                 if (board[i] !== -1) {
                     const j = board[i];
@@ -86,7 +98,7 @@ async function placeQueensOnRow(row) {
             }
             cellColors[row][col] = (row + col) % 2 === 0 ? 'white' : 'gray';
             updateBoard();
-            await sleep(500);
+            await sleep(speed);
         }
         cellColors[row][col] = (row + col) % 2 === 0 ? 'white' : 'gray';
         updateBoard();
@@ -105,3 +117,34 @@ function isSafe(row, col) {
     }
     return true;
 }
+
+async function showSolution() {
+    const solutionBoard = document.createElement('div');
+    solutionBoard.className = 'solution-board';
+    solutionBoard.style.gridTemplateColumns = `repeat(${N}, 50px)`;
+    solutionBoard.style.gridTemplateRows = `repeat(${N}, 50px)`;
+
+    for (let i = 0; i < N; i++) {
+        for (let j = 0; j < N; j++) {
+            const cell = document.createElement('div');
+            cell.classList.add('cell', (i + j) % 2 === 0 ? 'white' : 'gray');
+            if (board[i] === j) {
+                cell.textContent = '♛';
+            }
+            solutionBoard.appendChild(cell);
+        }
+    }
+
+    solutionsDiv.appendChild(solutionBoard);
+    await sleep(2000);
+}
+
+speedSlider.addEventListener('input', () => {
+    speed = 2000 - parseInt(speedSlider.value); // Invert the speed interpretation
+});
+
+document.getElementById('sizeInput').addEventListener('change', () => {
+    if (!solving) {
+        initialize();
+    }
+});
